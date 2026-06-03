@@ -150,7 +150,7 @@ function VehicleFormModal({ open, mode, value, onChange, onClose, onSubmit, load
   const isValidNumber = (n) => n !== '' && !Number.isNaN(Number(n));
   const formValid =
     isValidName &&
-    ['baseprice', 'timeprice', 'distaceprice', 'plateformfees', 'cancelprice']
+    ['baseprice', 'timeprice', 'distaceprice', 'plateformfees']
       .every(k => isValidNumber(value[k]));
 
   return (
@@ -167,7 +167,6 @@ function VehicleFormModal({ open, mode, value, onChange, onClose, onSubmit, load
             { label: 'Time Price', key: 'timeprice' },
             { label: 'Distance Price', key: 'distaceprice' },
             { label: 'Platform Fees (%)', key: 'plateformfees' },
-            { label: 'Cancel Price', key: 'cancelprice' },
           ].map((f) => (
             <div key={f.key}>
               <label className="text-xs font-medium text-gray-600">{f.label}</label>
@@ -224,7 +223,6 @@ export default function FareManagementPage() {
     timeprice: '',
     distaceprice: '',
     plateformfees: '',
-    cancelprice: '',
   });
   const [editingItem, setEditingItem] = useState(null);
 
@@ -344,7 +342,6 @@ export default function FareManagementPage() {
       timeprice: '',
       distaceprice: '',
       plateformfees: '',
-      cancelprice: '',
     });
     setEditingItem(null);
     setFormOpen(true);
@@ -359,7 +356,6 @@ export default function FareManagementPage() {
       timeprice: String(item?.timeprice ?? ''),
       distaceprice: String(item?.distaceprice ?? ''),
       plateformfees: String(item?.plateformfees ?? ''),
-      cancelprice: String(item?.cancelprice ?? ''),
     });
     setFormOpen(true);
   };
@@ -378,7 +374,10 @@ export default function FareManagementPage() {
         action: async () => {
           setConfirmLoading(true);
           try {
-            await runApi(() => AddVehicleType(formData), { onErrorMessage: 'Failed to add vehicle.' });
+            await runApi(
+              () => AddVehicleType({ ...formData, cancelprice: 0 }),
+              { onErrorMessage: 'Failed to add vehicle.' }
+            );
             setFormOpen(false);
             await loadList();
           } catch (err) {
@@ -465,8 +464,8 @@ export default function FareManagementPage() {
           )}
         </div>
         <p className="text-sm text-gray-600 mb-4">
-          Flat USD fees charged when a rider cancels after a driver is assigned. These apply by ride
-          status (Accepted / Arrived), not per-vehicle Cancel Price below.
+          Flat USD fees charged when a rider cancels after a driver is assigned, based on ride
+          status (Accepted / Arrived).
         </p>
         <ErrorPanel message={cancellationFeesError} onRetry={loadCancellationFees} />
         {loadingCancellationFees ? (
@@ -562,7 +561,6 @@ export default function FareManagementPage() {
                 <th className="px-6 py-4">Time Price</th>
                 <th className="px-6 py-4">Distance Price</th>
                 <th className="px-6 py-4">Platform Fees (%)</th>
-                <th className="px-6 py-4">Cancel Price</th>
                 <th className="px-6 py-4">Edit</th>
                 <th className="px-6 py-4">Delete</th>
                 <th className="px-6 py-4">Change Status</th>
@@ -578,7 +576,6 @@ export default function FareManagementPage() {
                   <td className="px-6 py-4">{b?.timeprice || 0}</td>
                   <td className="px-6 py-4">{b?.distaceprice || 0}</td>
                   <td className="px-6 py-4">{b?.plateformfees || 0} %</td>
-                  <td className="px-6 py-4">{b?.cancelprice || 0}</td>
 
                   <td className="px-6 py-4">
                     <button
